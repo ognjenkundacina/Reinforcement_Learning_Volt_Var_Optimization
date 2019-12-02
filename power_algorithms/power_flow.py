@@ -1,11 +1,9 @@
 import pandapower as pp
-#import network_definition as grid
-import power_algorithms.network_definition as grid
-
+import network_management as nm
 
 class PowerFlow:
-    def __init__(self):
-        self.power_grid = grid.create_network()
+    def __init__(self, grid_creator):
+        self.power_grid = grid_creator.get_power_grid()
 
     def calculate_power_flow(self):
         pp.runpp(self.power_grid, algorithm="bfsw", calculate_voltage_angles=False)
@@ -20,7 +18,11 @@ class PowerFlow:
         return grid_losses
 
 # def main():
-#     power_flow = PowerFlow()
+#     network_manager = nm.NetworkManagement()
+#     power_flow = PowerFlow(network_manager)
+#     power_flow.calculate_power_flow()
+#     print(power_flow.get_losses())
+#     network_manager.change_capacitor_status('CapSwitch6', True)
 #     power_flow.calculate_power_flow()
 #     print(power_flow.get_losses())
 

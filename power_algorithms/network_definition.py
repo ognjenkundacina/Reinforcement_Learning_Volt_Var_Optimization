@@ -27,4 +27,29 @@ def create_network():
     for i in range(0, 99):
         pp.create_line(network, from_bus=busNodes[i], to_bus=busNodes[i+1], length_km=0.2, name="Line_" + str(i), std_type="NA2XS2Y 1x150 RM/25 12/20 kV")
 
+    # Add capacitors with regulating switches
+    pp.create_bus(network, vn_kv=20, name="Bus_Cap1")
+    pp.create_switch(network, pp.get_element_index(network, "bus", 'Bus_18'), pp.get_element_index(network, "bus", 'Bus_Cap1'), et="b", closed=False, type="LBS", name="CapSwitch1")
+    pp.create_shunt_as_capacitor(network, pp.get_element_index(network, "bus", 'Bus_Cap1'), 0.25, 0, name="Cap1")
+
+    pp.create_bus(network, vn_kv=20, name="Bus_Cap2")
+    pp.create_switch(network, pp.get_element_index(network, "bus", 'Bus_33'), pp.get_element_index(network, "bus", 'Bus_Cap2'), et="b", closed=False, type="LBS", name="CapSwitch2")
+    pp.create_shunt_as_capacitor(network, pp.get_element_index(network, "bus", 'Bus_Cap2'), 0.25, 0, name="Cap2")
+
+    pp.create_bus(network, vn_kv=20, name="Bus_Cap3")
+    pp.create_switch(network, pp.get_element_index(network, "bus", 'Bus_48'), pp.get_element_index(network, "bus", 'Bus_Cap3'), et="b", closed=False, type="LBS", name="CapSwitch3")
+    pp.create_shunt_as_capacitor(network, pp.get_element_index(network, "bus", 'Bus_Cap3'), 0.25, 0, name="Cap3")
+
+    pp.create_bus(network, vn_kv=20, name="Bus_Cap4")
+    pp.create_switch(network, pp.get_element_index(network, "bus", 'Bus_63'), pp.get_element_index(network, "bus", 'Bus_Cap4'), et="b", closed=False, type="LBS", name="CapSwitch4")
+    pp.create_shunt_as_capacitor(network, pp.get_element_index(network, "bus", 'Bus_Cap4'), 0.25, 0, name="Cap4")
+
+    pp.create_bus(network, vn_kv=20, name="Bus_Cap5")
+    pp.create_switch(network, pp.get_element_index(network, "bus", 'Bus_78'), pp.get_element_index(network, "bus", 'Bus_Cap5'), et="b", closed=False, type="LBS", name="CapSwitch5")
+    pp.create_shunt_as_capacitor(network, pp.get_element_index(network, "bus", 'Bus_Cap5'), 0.25, 0, name="Cap5")
+
+    pp.create_bus(network, vn_kv=20, name="Bus_Cap6")
+    pp.create_switch(network, pp.get_element_index(network, "bus", 'Bus_93'), pp.get_element_index(network, "bus", 'Bus_Cap6'), et="b", closed=False, type="LBS", name="CapSwitch6")
+    pp.create_shunt_as_capacitor(network, pp.get_element_index(network, "bus", 'Bus_Cap6'), 0.25, 0, name="Cap6")
+
     return network
