@@ -2,7 +2,7 @@ import gym
 from gym import spaces
 import random
 import numpy as np 
-from power_algorithms.load_flow import load_flow
+from power_algorithms.power_flow import PowerFlow
 
 class Environment(gym.Env):
     

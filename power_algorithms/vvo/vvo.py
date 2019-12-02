@@ -1,5 +1,5 @@
 import pandas
-from power_algorithms.load_flow import load_flow
+from power_algorithms.power_flow import PowerFlow
 
 class VVO():
 
