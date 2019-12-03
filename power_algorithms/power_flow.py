@@ -17,13 +17,36 @@ class PowerFlow:
         
         return grid_losses
 
+    def get_bus_voltages(self):
+        switch_busses = set(self.power_grid.switch.element.values)
+        mv_buses = self.power_grid.bus[(self.power_grid.bus.vn_kv == 20) & (~self.power_grid.bus.index.isin(switch_busses))].index
+        name_with_voltage = {}
+        for bus_index in mv_buses:
+            name_with_voltage.update( {self.power_grid.bus.name.at[bus_index] : self.power_grid.res_bus.vm_pu.at[bus_index]} )
+
+        return name_with_voltage
+
+    def get_network_injected_p(self):
+        return self.power_grid.res_ext_grid.p_mw
+
+    def get_network_injected_q(self):
+        return self.power_grid.res_ext_grid.q_mvar
+
 # def main():
 #     network_manager = nm.NetworkManagement()
 #     power_flow = PowerFlow(network_manager)
 #     power_flow.calculate_power_flow()
 #     print(power_flow.get_losses())
+#     print(power_flow.get_network_injected_p())
+#     print(power_flow.get_network_injected_q())
 #     network_manager.change_capacitor_status('CapSwitch6', True)
 #     power_flow.calculate_power_flow()
 #     print(power_flow.get_losses())
+
+#     print(*network_manager.get_all_capacitor_switch_names())
+#     print(power_flow.get_network_injected_p())
+#     print(power_flow.get_network_injected_q())
+
+#     print(power_flow.get_bus_voltages())
 
 # main()

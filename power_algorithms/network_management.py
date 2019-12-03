@@ -12,3 +12,7 @@ class NetworkManagement:
     def change_capacitor_status(self, capSwitchName, closed):
         switchIndex = pp.get_element_index(self.power_grid, "switch", capSwitchName)
         self.power_grid.switch.closed.loc[switchIndex] = closed
+    
+    def get_all_capacitor_switch_names(self):
+        return self.power_grid.switch['name'].tolist()
+
