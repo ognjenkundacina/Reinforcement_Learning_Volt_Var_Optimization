@@ -2,7 +2,7 @@ import os
 from environment.environment import Environment
 import pandas as pd
 from rl_algorithms.deep_q_learning import DeepQLearningAgent
-from power_algorithms.vvo.vvo import VVO
+from power_algorithms.vvo import VVO
 from power_algorithms.power_flow import PowerFlow
 import time
 
