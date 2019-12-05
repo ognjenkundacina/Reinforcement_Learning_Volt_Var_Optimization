@@ -1,4 +1,4 @@
-import network_definition as grid
+import power_algorithms.network_definition as grid
 import pandapower as pp
 
 class NetworkManagement:

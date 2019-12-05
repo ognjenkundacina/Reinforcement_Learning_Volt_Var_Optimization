@@ -4,34 +4,35 @@ import pandas as pd
 from rl_algorithms.deep_q_learning import DeepQLearningAgent
 from power_algorithms.vvo import VVO
 from power_algorithms.power_flow import PowerFlow
+from power_algorithms.vvo_brute_force import vvo_brute_force
 import time
 
 def load_dataset():
     script_dir = os.path.dirname(__file__)
     file_path = os.path.join(script_dir, './dataset/data.csv')
-    #df = pd.read_csv(file_path)
+    df = pd.read_csv(file_path)
 
-    #return df
-    return None
+    return df
 
 def split_dataset(df, split_index):
-    #df_train = df[df.index <= split_index]
-    #df_test = df[df.index > split_index]
+    df_train = df[df.index <= split_index]
+    df_test = df[df.index > split_index]
 
-    #return df_train, df_test
-    return None, None
-
+    return df_train, df_test
 
 def main():
     #dataset contains random power injection of nodes
     df = load_dataset()
-    df_train, df_test = split_dataset(df, 0)
+    df_train, df_test = split_dataset(df, 5498)
+
+    #vvo_brute_force() #daje optimalno rjesenje kada su ukljuceni 2, 3, 4 ,6
 
     #environment should'n have the entire dataset as an input parameter, but train and test methods
     environment = Environment()
+
     agent = DeepQLearningAgent(environment)
 
-    n_episodes = 0
+    n_episodes = 90
     print('agent training started')
     t1 = time.time()
     agent.train(df_train, n_episodes)
@@ -39,7 +40,6 @@ def main():
     print ('agent training finished in', t2-t1)
 
     agent.test(df_test)
-
 
     """
     1. Testirati VVO algoritam na df_test primjerima, da bismo ih evaluirali istom metrikom kojom smo evaluirali rl agente (sabrana dugorocna nagrada sve sve primjere iz test seta)

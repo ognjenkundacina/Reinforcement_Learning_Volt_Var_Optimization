@@ -1,6 +1,7 @@
 from collections import namedtuple
 from itertools import count
 import random
+import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -53,35 +54,175 @@ class DeepQLearningAgent:
 
     def __init__(self, environment):
         self.environment = environment
-        self.epsilon = 0.1
+        self.epsilon = 0.2
         self.batch_size = 32
         self.gamma = 0.9
         self.target_update = 5
         self.memory = ReplayMemory(1000000)
 
-        #self.state_space_dims = environment.state_space_dims
-        #self.n_actions = environment.n_actions
+        self.state_space_dims = environment.state_space_dims
+        self.n_actions = environment.n_actions
 
-        #self.policy_net = DQN(self.state_space_dims, self.n_actions)
-        #self.target_net = DQN(self.state_space_dims, self.n_actions)
-        #self.target_net.load_state_dict(self.policy_net.state_dict())
+        self.policy_net = DQN(self.state_space_dims, self.n_actions)
+        self.target_net = DQN(self.state_space_dims, self.n_actions)
+        self.target_net.load_state_dict(self.policy_net.state_dict())
 
-        #self.policy_net.train() #train mode (train vs eval mode)
+        self.policy_net.train() #train mode (train vs eval mode)
 
-        #self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.00001) 
+        self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.00001) 
+        #self.optimizer = optim.RMSprop(self.policy_net.parameters())
 
     def reset_environment_training(self, state_variables):
         pass
         #return self.environment.reset(state_variables)
 
+    #return capacitor index: 0..n_cap - 1
     def get_action(self, state):
-        pass
+        if random.random() > self.epsilon:
+            self.policy_net.eval()
+            with torch.no_grad():
+                # t.max(1) will return largest column value of each row.
+                # second column on max result is index of where max element was
+                # found, so we pick action with the larger expected reward.
+                action = self.policy_net(state).max(1)[1].view(1, 1)
+                self.policy_net.train()
+                return action.item()
+        else:
+            return random.randint(0, self.n_actions-1)
 
     def train(self, df_train, n_episodes):
-        pass
+        
+        total_episode_rewards = []
+        for i_episode in range(n_episodes):
+            if (i_episode % 1 == 0):
+                print("=====================================Episode: ", i_episode)
+
+            done = False
+            df_row = df_train.sample(n=1)
+            consumption = df_row.values.tolist()
+            consumption = consumption[0]
+            state = self.environment.reset(consumption)
+            state = torch.tensor([state], dtype=torch.float)
+            total_episode_reward = 0 
+
+            while not done:
+                action = self.get_action(state)
+                print("action: ", action)    
+                if (action > self.n_actions - 1):
+                    print("agent.train: action > self.n_actions - 1")
+                next_state, reward, done = self.environment.step(action)
+                total_episode_reward += reward
+
+                reward = torch.tensor([reward], dtype=torch.float)
+                action = torch.tensor([action], dtype=torch.float)
+                next_state = torch.tensor([next_state], dtype=torch.float)
+                if done:
+                    next_state = None
+
+                self.memory.push(state, action, next_state, reward)
+
+                state = next_state
+
+                self.optimize_model()
+            
+            total_episode_rewards.append(total_episode_reward)
+
+            if (i_episode % 1 == 0):
+                print ("total_episode_reward: ", total_episode_reward)
+
+            if (i_episode % 100 == 0):
+                torch.save(self.policy_net.state_dict(), "policy_net")
+
+            if i_episode % self.target_update == 0:
+                self.target_net.load_state_dict(self.policy_net.state_dict())
+
+        torch.save(self.policy_net.state_dict(), "policy_net")
+
+        x_axis = [1 + j for j in range(len(total_episode_rewards))]
+        plt.plot(x_axis, total_episode_rewards)
+        plt.xlabel('Episode number') 
+        plt.ylabel('Total episode reward') 
+        plt.savefig("total_episode_rewards.png")
+        plt.show()
+
 
     def test(self, df_test):
-        pass
+        total_episode_reward_list = [] 
+
+        #self.policy_net.load_state_dict(torch.load("policy_net"))
+        self.policy_net.eval()
+
+        for index, row in df_test.iterrows():
+            consumption = row.values.tolist()
+            #consumption = consumption[0] nije potrebno jer row nije stra struktura kao df frame u train metodi
+            state = self.environment.reset(consumption)
+
+            state = self.environment.reset(consumption)
+            state = torch.tensor([state], dtype=torch.float)
+            done = False
+            total_episode_reward = 0
+
+            while not done:
+                action = self.policy_net(state).max(1)[1].view(1, 1)
+                action = action.item()
+                print("action: ", action) 
+                if (action > self.n_actions - 1):
+                    print ("agent.test: action > self.n_actions - 1")
+                
+                next_state, reward, done = self.environment.step(action)
+                total_episode_reward += reward
+                state = torch.tensor([next_state], dtype=torch.float)
+
+            total_episode_reward_list.append(total_episode_reward)
+
+        print ("Test set reward ", sum(total_episode_reward_list))
 
     def optimize_model(self):
-        pass
+        if len(self.memory) < self.batch_size:
+            return
+        transitions = self.memory.sample(self.batch_size)
+
+        #converts batch array of transitions to transiton of batch arrays
+        batch = Transition(*zip(*transitions))
+
+        #compute a mask of non final states and concatenate the batch elements
+        #there will be zero q values for final states later... therefore we need mask
+        non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), dtype = torch.uint8)
+        non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
+
+        state_batch = torch.cat(batch.state)
+        action_batch = torch.cat(batch.action).view(-1,1)
+        reward_batch = torch.cat(batch.reward).view(-1,1)
+
+        # compute Q(s_t, a) - the model computes Q(s_t), then we select
+        # the columns of actions taken. These are the actions which would've
+        # been taken for each batch state according to policy net
+        state_action_values = self.policy_net(state_batch).gather(1, action_batch.long())
+
+        #gather radi isto sto i:
+        #q_vals = []
+        #for qv, ac in zip(Q(obs_batch), act_batch):
+        #    q_vals.append(qv[ac])
+        #q_vals = torch.cat(q_vals, dim=0)
+
+        # Compute V(s_{t+1}) for all next states
+        # q values of actions for non terminal states are computed using
+        # the older target network, selecting the best reward with max
+        next_state_values = torch.zeros(self.batch_size)
+        next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach() #nema final stanja
+        #za stanja koja su final ce next_state_values biti 0
+        #detach znaci da se nad varijablom next_state_values ne vrsi optimizacicja
+        next_state_values = next_state_values.view(-1,1)
+        # compute the expected Q values
+        expected_state_action_values = (next_state_values*self.gamma) + reward_batch
+
+        #Huber loss
+        loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
+
+        self.optimizer.zero_grad()
+        loss.backward()
+
+        #todo razmisli kasnije o ovome
+        #for param in self.policy_net.parameters():
+        #    param.grad.data.clamp_(-1, 1)
+        self.optimizer.step()

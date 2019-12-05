@@ -1,5 +1,5 @@
 import pandapower as pp
-import network_management as nm
+import power_algorithms.network_management as nm
 
 class PowerFlow:
     def __init__(self, grid_creator):
