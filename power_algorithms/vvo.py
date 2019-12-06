@@ -1,7 +1,7 @@
 import pandas
-import network_management as nm
-from objective_functions import ObjectiveFunctions, ObjFuncType, ObjectivesStatus
-from power_flow import PowerFlow
+import power_algorithms.network_management as nm
+from power_algorithms.objective_functions import ObjectiveFunctions, ObjFuncType, ObjectivesStatus
+from power_algorithms.power_flow import PowerFlow
 
 class VVO():
 
@@ -12,7 +12,9 @@ class VVO():
 
     def execute(self):
         switchingSequence = []
+        n_power_flow_execution = 0
         self.power_flow.calculate_power_flow()
+        n_power_flow_execution = n_power_flow_execution + 1
         self.objective_functions.SetCurrentObjectivesResults()
 
         should_use_capacitor = {}
@@ -29,6 +31,7 @@ class VVO():
                 close = True
                 self.network_manager.change_capacitor_status(capacitor, close)
                 self.power_flow.calculate_power_flow()
+                n_power_flow_execution = n_power_flow_execution + 1
                 benefit = self.objective_functions.CalculateObjFunction()
                 if benefit > previous_benefit:
                     candidateCapacitor = capacitor
@@ -39,14 +42,17 @@ class VVO():
             if previous_benefit != 0:
                 switchingSequence.append(candidateCapacitor)
                 close = True
-                self.network_manager.change_capacitor_status(capacitor, close)
+                self.network_manager.change_capacitor_status(candidateCapacitor, close)
                 self.power_flow.calculate_power_flow()
+                n_power_flow_execution = n_power_flow_execution + 1
                 self.objective_functions.SetCurrentObjectivesResults()
                 should_use_capacitor.update({candidateCapacitor : False})
                 there_is_capacitors_for_use = self.isThereCapacitorsForUse(should_use_capacitor)
             else:
                 there_is_capacitors_for_use = False
 
+        print('Number of power flow executions: ', n_power_flow_execution)
+        print('Final losses: ', self.objective_functions.current_objectives_result[ObjFuncType.ACTIVE_POWER_LOSSES.name])
         return switchingSequence
 
     def isThereCapacitorsForUse(self, should_use_capacitor):
