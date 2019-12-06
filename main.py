@@ -36,13 +36,13 @@ def main():
     vvo.test(df_test)
 
     vvo_brute_force(df_test)
-    """
+
     #environment should'n have the entire dataset as an input parameter, but train and test methods
     environment = Environment()
 
     agent = DeepQLearningAgent(environment)
 
-    n_episodes = 3
+    n_episodes = 1000
     print('agent training started')
     t1 = time.time()
     agent.train(df_train, n_episodes)
@@ -50,7 +50,6 @@ def main():
     print ('agent training finished in', t2-t1)
 
     agent.test(df_test)
-"""
 
 if __name__ == '__main__':
     main()
