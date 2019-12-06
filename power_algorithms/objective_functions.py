@@ -16,25 +16,25 @@ class ObjectiveFunctions:
     def __init__(self, objectives, power_flow):
         self.objectives = objectives
         self.power_flow = power_flow
-        self.initial_objectives_result = []
-    
-    def SetInitialObjectivesResults(self):
+        self.current_objectives_result = {}
+
+    def SetCurrentObjectivesResults(self):
         for iObjective in self.objectives:
             if iObjective.name == ObjFuncType.ACTIVE_POWER_LOSSES.name: 
                 result = self.CalculatePowerLosses()
             elif iObjective.name == ObjFuncType.POWER_FACTOR.name:
                 result = self.CalculatePowerFactor()
             elif iObjective.name == ObjFuncType.MV_VOLTAGE_DEVIATION.name:
-                result == self.CalculateVoltageDeviation()
-            self.initial_objectives_result.append(result)
+                result = self.CalculateVoltageDeviation()
+            self.current_objectives_result.update({iObjective.name : result})
 
     def CalculateObjFunction(self):
         status = ObjectivesStatus.UNKNOWN
-
+        benefit = 0
         for iObjective in reversed(self.objectives):
             if iObjective.name == ObjFuncType.ACTIVE_POWER_LOSSES.name: 
                 result = self.CalculatePowerLosses()
-                if result < self.initial_objectives_result[iObjective.value-1]:
+                if result < self.current_objectives_result[iObjective.name]:
                     status = ObjectivesStatus.IMPROVED_OBECTIVE_FUNCTION
                 else:
                     status = ObjectivesStatus.DETERIORATED_OBJECTIVE_FUNCTION
@@ -47,8 +47,9 @@ class ObjectiveFunctions:
                 if result != 0.0:
                     status = ObjectivesStatus.VIOLATED_CONSTRAINT
                     break
-                
-        return status
+            benefit = self.current_objectives_result[iObjective.name] - result
+
+        return benefit
 
     def CalculatePowerLosses(self):
         result = self.power_flow.get_losses()

@@ -13,18 +13,47 @@ class VVO():
     def execute(self):
         switchingSequence = []
         self.power_flow.calculate_power_flow()
-        self.objective_functions.SetInitialObjectivesResults()
+        self.objective_functions.SetCurrentObjectivesResults()
 
+        should_use_capacitor = {}
         capacitors = self.network_manager.get_all_capacitor_switch_names()
-        close = True
         for capacitor in capacitors:
-            self.network_manager.change_capacitor_status(capacitor, close)
-            self.power_flow.calculate_power_flow()
-            improves_objectives = self.doesCapacitorImprovesObjectives()
-            if improves_objectives == True:
-                switchingSequence.append(capacitor)
+            should_use_capacitor.update({capacitor : True})
+        there_is_capacitors_for_use = True
+
+        while there_is_capacitors_for_use:
+            previous_benefit = 0
+            for capacitor in capacitors:
+                if should_use_capacitor[capacitor] == False:
+                    continue
+                close = True
+                self.network_manager.change_capacitor_status(capacitor, close)
+                self.power_flow.calculate_power_flow()
+                benefit = self.objective_functions.CalculateObjFunction()
+                if benefit > previous_benefit:
+                    candidateCapacitor = capacitor
+                    previous_benefit = benefit
+                close = False
+                self.network_manager.change_capacitor_status(capacitor, close)
+
+            if previous_benefit != 0:
+                switchingSequence.append(candidateCapacitor)
+                close = True
+                self.network_manager.change_capacitor_status(capacitor, close)
+                self.power_flow.calculate_power_flow()
+                self.objective_functions.SetCurrentObjectivesResults()
+                should_use_capacitor.update({candidateCapacitor : False})
+                there_is_capacitors_for_use = self.isThereCapacitorsForUse(should_use_capacitor)
+            else:
+                there_is_capacitors_for_use = False
 
         return switchingSequence
+
+    def isThereCapacitorsForUse(self, should_use_capacitor):
+        for capacitor in should_use_capacitor:
+            if should_use_capacitor[capacitor]:
+                return True
+        return False
 
     def doesCapacitorImprovesObjectives(self):
         status = self.objective_functions.CalculateObjFunction()
@@ -33,7 +62,6 @@ class VVO():
             return True
         else:
             return False
-
 
     #execute VVO for every example in the test set and calculate the total reward
     def test(self, df_test):
