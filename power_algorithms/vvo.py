@@ -28,21 +28,18 @@ class VVO():
             for capacitor in capacitors:
                 if should_use_capacitor[capacitor] == False:
                     continue
-                close = True
-                self.network_manager.change_capacitor_status(capacitor, close)
+                self.network_manager.toogle_capacitor_status(capacitor)
                 self.power_flow.calculate_power_flow()
                 n_power_flow_execution = n_power_flow_execution + 1
                 benefit = self.objective_functions.CalculateObjFunction()
                 if benefit > previous_benefit:
                     candidateCapacitor = capacitor
                     previous_benefit = benefit
-                close = False
-                self.network_manager.change_capacitor_status(capacitor, close)
+                self.network_manager.toogle_capacitor_status(capacitor)
 
             if previous_benefit != 0:
                 switchingSequence.append(candidateCapacitor)
-                close = True
-                self.network_manager.change_capacitor_status(candidateCapacitor, close)
+                self.network_manager.toogle_capacitor_status(candidateCapacitor)
                 self.power_flow.calculate_power_flow()
                 n_power_flow_execution = n_power_flow_execution + 1
                 self.objective_functions.SetCurrentObjectivesResults()
@@ -51,8 +48,12 @@ class VVO():
             else:
                 there_is_capacitors_for_use = False
 
+        print('VVO results:')
         print('Number of power flow executions: ', n_power_flow_execution)
         print('Final losses: ', self.objective_functions.current_objectives_result[ObjFuncType.ACTIVE_POWER_LOSSES.name])
+        for capacitor in switchingSequence:
+            print(capacitor)
+
         return switchingSequence
 
     def isThereCapacitorsForUse(self, should_use_capacitor):

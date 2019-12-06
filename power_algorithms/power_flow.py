@@ -1,6 +1,8 @@
 import pandapower as pp
 import power_algorithms.network_management as nm
 import math
+import random
+import pandas
 
 class PowerFlow:
     def __init__(self, grid_creator):
@@ -51,3 +53,16 @@ class PowerFlow:
             capacitor_q_injected.update( {self.power_grid.shunt.name.at[cap_index] : self.power_grid.res_shunt.q_mvar.at[cap_index]} )
 
         return capacitor_q_injected
+    
+    def create_data_set(self):
+        columns = [i for i in range(106)]
+        index = [i for i in range(1000)]
+        df = pandas.DataFrame(index=index, columns=columns)
+        df = df.fillna(0)
+        for index, row in df.iterrows():
+            for i in range(100):
+                df.loc[index, i] = random.random()
+            for i in range(100, 106):
+                df.loc[index, i] = random.choice([True, False])
+
+        df.to_csv('data.csv')
