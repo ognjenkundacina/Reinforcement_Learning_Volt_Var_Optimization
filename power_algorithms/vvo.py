@@ -72,7 +72,16 @@ class VVO():
 
     #execute VVO for every example in the test set and calculate the total reward
     def test(self, df_test):
-        pass
+        for index, row in df_test.iterrows():
+            row_list = row.values.tolist()
+
+            consumption_percents = row_list[1:100 + 1]
+            capacitor_statuses = row_list[100 + 1:]
+
+            self.network_manager.set_load_scaling(consumption_percents)
+            self.network_manager.set_capacitors_initial_status(capacitor_statuses)
+            
+            self.execute()
 
 #def main():
   #  objectiveFunction = ObjFuncType.ACTIVE_POWER_LOSSES

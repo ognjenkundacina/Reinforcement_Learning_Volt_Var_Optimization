@@ -6,6 +6,9 @@ from power_algorithms.vvo import VVO
 from power_algorithms.power_flow import PowerFlow
 from power_algorithms.vvo_brute_force import vvo_brute_force
 import time
+import power_algorithms.network_management as nm
+from power_algorithms.objective_functions import ObjectiveFunctions, ObjFuncType
+
 
 def load_dataset():
     script_dir = os.path.dirname(__file__)
@@ -25,6 +28,15 @@ def main():
     df = load_dataset()
     df_train, df_test = split_dataset(df, 998)
 
+    objectives = [ObjFuncType.ACTIVE_POWER_LOSSES]
+    network_manager = nm.NetworkManagement()
+    power_flow = PowerFlow(network_manager)
+    objective_functions = ObjectiveFunctions(objectives, power_flow)
+    vvo = VVO(network_manager, power_flow, objective_functions) 
+    vvo.test(df_test)
+
+    vvo_brute_force(df_test)
+    """
     #environment should'n have the entire dataset as an input parameter, but train and test methods
     environment = Environment()
 
@@ -38,12 +50,7 @@ def main():
     print ('agent training finished in', t2-t1)
 
     agent.test(df_test)
-
-    """
-    1. Testirati VVO algoritam na df_test primjerima, da bismo ih evaluirali istom metrikom kojom smo evaluirali rl agente (sabrana dugorocna nagrada sve sve primjere iz test seta)
-    VVO.test(df_test)
-    2. Smisliti jedan kritican primjer za prezentaciju i testirati rl i vvo na njemu
-    """
+"""
 
 if __name__ == '__main__':
-  main()
+    main()
