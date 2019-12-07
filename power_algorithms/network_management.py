@@ -25,3 +25,21 @@ class NetworkManagement:
     def get_all_capacitors(self):
         return pd.Series(self.power_grid.switch.closed.values, index=self.power_grid.switch.name).to_dict()
 
+    def set_load_scaling(self, scaling_factors):
+        if (len(scaling_factors) != len(self.power_grid.load.index)):
+            print("(ERROR) Input list of scaling factors {} is not the same length as number of loads {}".format(len(scaling_factors), len(self.power_grid.load.index)))
+            return
+
+        for index, load in self.power_grid.load.iterrows():
+            self.power_grid.load.scaling.loc[index] = scaling_factors[index]
+
+    def set_capacitors_initial_status(self, capacitors_statuses):
+        if (len(capacitors_statuses) != len(self.power_grid.shunt.index)):
+            print("(ERROR) Input list of capacitor statuses {} is not the same length as number of capacitors {}".format(len(capacitors_statuses), len(self.power_grid.shunt.index)))
+            return
+        
+        capacitor_switches = self.power_grid.switch.index.tolist()
+        input_status_index = 0
+        for switch_index in capacitor_switches:
+            self.power_grid.switch.closed.loc[switch_index] = capacitors_statuses[input_status_index]
+            input_status_index += 1
