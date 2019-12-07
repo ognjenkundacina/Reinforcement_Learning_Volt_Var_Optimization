@@ -2,6 +2,7 @@ from collections import namedtuple
 from itertools import count
 import random
 import matplotlib.pyplot as plt
+import time
 
 import torch
 import torch.nn as nn
@@ -54,9 +55,9 @@ class DeepQLearningAgent:
 
     def __init__(self, environment):
         self.environment = environment
-        self.epsilon = 0.2
+        self.epsilon = 0.5
         self.batch_size = 32
-        self.gamma = 0.9
+        self.gamma = 1.0
         self.target_update = 5
         self.memory = ReplayMemory(1000000)
 
@@ -69,7 +70,7 @@ class DeepQLearningAgent:
 
         self.policy_net.train() #train mode (train vs eval mode)
 
-        self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.00001) 
+        self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.00001) #todo pokusaj nesto drugo
         #self.optimizer = optim.RMSprop(self.policy_net.parameters())
 
     def reset_environment_training(self, state_variables):
@@ -77,25 +78,44 @@ class DeepQLearningAgent:
         #return self.environment.reset(state_variables)
 
     #return capacitor index: 0..n_cap - 1
-    def get_action(self, state):
-        if random.random() > self.epsilon:
+    def get_action(self, state, epsilon):
+        #print('Available actions:')
+        #print(self.environment.available_actions)
+        if random.random() > epsilon:
             self.policy_net.eval()
             with torch.no_grad():
-                # t.max(1) will return largest column value of each row.
-                # second column on max result is index of where max element was
-                # found, so we pick action with the larger expected reward.
-                action = self.policy_net(state).max(1)[1].view(1, 1)
+                #self.policy_net(state).sort(-1, descending = True)[1] daje indekse akcija sortiranih po njihovim q vrijednostima
+                sorted_actions = self.policy_net(state).sort(-1, descending = True)[1].tolist()[0]
+                #print('Sorted actions:')
+                #print (sorted_actions)
+                for action_candidate in sorted_actions:
+                    if (len(self.environment.available_actions) == 0):
+                        print('Agent -> get_action: No avaliable actions')
+                    if action_candidate in self.environment.available_actions:
+                        action = action_candidate
+                        break
+                #action = self.policy_net(state).max(1)[1].view(1, 1)
                 self.policy_net.train()
-                return action.item()
+                return action
         else:
-            return random.randint(0, self.n_actions-1)
+            action = random.choice(self.environment.available_actions)
+            #print('Random action: ', action)
+            return action
 
     def train(self, df_train, n_episodes):
         
         total_episode_rewards = []
         for i_episode in range(n_episodes):
             if (i_episode % 1 == 0):
-                print("=====================================Episode: ", i_episode)
+                print("=========Episode: ", i_episode)
+
+            if (i_episode == 10):
+                self.epsilon = 0.3
+            if (i_episode == 50):
+                self.epsilon = 0.1
+
+            if (i_episode % 20 == 19):
+                time.sleep(30)
 
             done = False
             df_row = df_train.sample(n=1)
@@ -106,8 +126,8 @@ class DeepQLearningAgent:
             total_episode_reward = 0 
 
             while not done:
-                action = self.get_action(state)
-                print("action: ", action)    
+                action = self.get_action(state, epsilon = self.epsilon)
+                print("Toogle capacitor: ", action + 1)    
                 if (action > self.n_actions - 1):
                     print("agent.train: action > self.n_actions - 1")
                 next_state, reward, done = self.environment.step(action)
@@ -136,14 +156,16 @@ class DeepQLearningAgent:
             if i_episode % self.target_update == 0:
                 self.target_net.load_state_dict(self.policy_net.state_dict())
 
+            print("=====================================")
+
         torch.save(self.policy_net.state_dict(), "policy_net")
 
         x_axis = [1 + j for j in range(len(total_episode_rewards))]
         plt.plot(x_axis, total_episode_rewards)
         plt.xlabel('Episode number') 
         plt.ylabel('Total episode reward') 
-        plt.savefig("total_episode_rewards.png")
-        plt.show()
+        #plt.savefig("total_episode_rewards.png")
+        #plt.show()
 
 
     def test(self, df_test):
@@ -163,15 +185,17 @@ class DeepQLearningAgent:
             total_episode_reward = 0
 
             while not done:
-                action = self.policy_net(state).max(1)[1].view(1, 1)
-                action = action.item()
-                print("action: ", action) 
+                action = self.get_action(state, epsilon = 0.0)
+                print("Toogle capacitor: ", action + 1) 
                 if (action > self.n_actions - 1):
                     print ("agent.test: action > self.n_actions - 1")
                 
                 next_state, reward, done = self.environment.step(action)
                 total_episode_reward += reward
                 state = torch.tensor([next_state], dtype=torch.float)
+
+                if done: #posljednja akcija nije donosila benefit, pa je ukidamo i nakon nje ispisujemo gubitke u mrezi
+                    print('LOSSES: ', self.environment.revert_action(action))
 
             total_episode_reward_list.append(total_episode_reward)
 
@@ -191,7 +215,7 @@ class DeepQLearningAgent:
         non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
 
         state_batch = torch.cat(batch.state)
-        action_batch = torch.cat(batch.action).view(-1,1)
+        action_batch = torch.cat(batch.action).view(-1,1) #reshape into many rows, one column
         reward_batch = torch.cat(batch.reward).view(-1,1)
 
         # compute Q(s_t, a) - the model computes Q(s_t), then we select

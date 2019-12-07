@@ -22,6 +22,8 @@ class Environment(gym.Env):
 
         self.current_losses = 0.0
 
+        self.available_actions = [i for i in range(self.n_actions)] #todo ovo bi mogao biti dictionary, ako bismo tap changere koristili, ili diskretizovane setpointe generatora
+
     def _update_state(self):
         self.power_flow.calculate_power_flow()
 
@@ -37,8 +39,9 @@ class Environment(gym.Env):
 
     #action: 0..n_actions
     def step(self, action):
-        #todo promjeniti da ovo bude promjena statusa switcha, a ne sa false na true => bice potrebna metoda get capacitor status
+        #todo promjeniti da ovo bude promjena statusa switcha, a ne sa false na true => bice potrebna metoda get capacitor status TOGGLE
         self.network_manager.change_capacitor_status('CapSwitch'+str(action + 1), True)
+        self.available_actions.remove(action)
         
         next_state = self._update_state()
 
@@ -46,9 +49,19 @@ class Environment(gym.Env):
 
         self.i_step += 1
 
-        done = (self.i_step == self.n_actions - 1)
+        done = (self.i_step == self.n_actions)
+
+        if (reward < 0.0):
+            done = True  #todo staviti odradjivanje vrijednosti za done u jednu liniju
 
         return next_state, reward, done
+    
+    #only for test set
+    def revert_action(self, action):
+        self.network_manager.change_capacitor_status('CapSwitch'+str(action + 1), False) #todo TOGGLE
+        next_state = self._update_state()
+        return self.power_flow.get_losses()
+
 
     def calculate_reward(self, action):
         new_losses = self.power_flow.get_losses()
@@ -85,4 +98,6 @@ class Environment(gym.Env):
         self.current_losses = self.power_flow.get_losses()
 
         self.i_step = 0
+        self.available_actions = [i for i in range(self.n_actions)]
+
         return self.state
