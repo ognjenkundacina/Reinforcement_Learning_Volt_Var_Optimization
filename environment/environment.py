@@ -16,10 +16,11 @@ class Environment(gym.Env):
         self.n_actions = 6 #n_capacitors
         self.i_step = 0
 
-        self.network_manager = nm.NetworkManagement() #zamijeni kasnije sa linijom ispod
-        #self.network_manager = nm.NetworkManagement(consumption)
+        self.network_manager = nm.NetworkManagement()
         self.power_flow = PowerFlow(self.network_manager)
 
+
+        self.n_consumers = 100
         self.current_losses = 0.0
 
         self.available_actions = [i for i in range(self.n_actions)] #todo ovo bi mogao biti dictionary, ako bismo tap changere koristili, ili diskretizovane setpointe generatora
@@ -39,8 +40,7 @@ class Environment(gym.Env):
 
     #action: 0..n_actions
     def step(self, action):
-        #todo promjeniti da ovo bude promjena statusa switcha, a ne sa false na true => bice potrebna metoda get capacitor status TOGGLE
-        self.network_manager.change_capacitor_status('CapSwitch'+str(action + 1), True)
+        self.network_manager.toogle_capacitor_status('CapSwitch'+str(action + 1))
         self.available_actions.remove(action)
         
         next_state = self._update_state()
@@ -58,7 +58,7 @@ class Environment(gym.Env):
     
     #only for test set
     def revert_action(self, action):
-        self.network_manager.change_capacitor_status('CapSwitch'+str(action + 1), False) #todo TOGGLE
+        self.network_manager.toogle_capacitor_status('CapSwitch'+str(action + 1))
         next_state = self._update_state()
         return self.power_flow.get_losses()
 
@@ -82,12 +82,9 @@ class Environment(gym.Env):
         #todo
         return reward
 
-    def reset(self, consumption):
-        #todo: bilo bi dobro da se NetworkManagement() poziva samo u konstruktoru environmenta, 
-        #a da se ovdje poziva samo metoda koja updatuje consumption u okviru objekta network_manager
-        self.network_manager = nm.NetworkManagement() #zamijeni kasnije sa linijom ispod
-        #self.network_manager = nm.NetworkManagement(consumption)
-        self.power_flow = PowerFlow(self.network_manager)
+    def reset(self, consumption_percents, capacitor_statuses):
+        self.network_manager.set_load_scaling(consumption_percents)
+        self.network_manager.set_capacitors_initial_status(capacitor_statuses)
         
         self.power_flow.calculate_power_flow()
         bus_voltages_dict = self.power_flow.get_bus_voltages()

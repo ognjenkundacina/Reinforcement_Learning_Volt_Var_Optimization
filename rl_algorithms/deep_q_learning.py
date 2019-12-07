@@ -73,10 +73,6 @@ class DeepQLearningAgent:
         self.optimizer = optim.Adam(self.policy_net.parameters(), lr=0.00001) #todo pokusaj nesto drugo
         #self.optimizer = optim.RMSprop(self.policy_net.parameters())
 
-    def reset_environment_training(self, state_variables):
-        pass
-        #return self.environment.reset(state_variables)
-
     #return capacitor index: 0..n_cap - 1
     def get_action(self, state, epsilon):
         #print('Available actions:')
@@ -119,9 +115,14 @@ class DeepQLearningAgent:
 
             done = False
             df_row = df_train.sample(n=1)
-            consumption = df_row.values.tolist()
-            consumption = consumption[0]
-            state = self.environment.reset(consumption)
+            row_list = df_row.values.tolist()
+            row_list = row_list[0]
+
+            consumption_percents = row_list[1:self.environment.n_consumers + 1]
+            capacitor_statuses = row_list[self.environment.n_consumers + 1:]
+
+            state = self.environment.reset(consumption_percents, capacitor_statuses)
+
             state = torch.tensor([state], dtype=torch.float)
             total_episode_reward = 0 
 
@@ -164,8 +165,8 @@ class DeepQLearningAgent:
         plt.plot(x_axis, total_episode_rewards)
         plt.xlabel('Episode number') 
         plt.ylabel('Total episode reward') 
-        #plt.savefig("total_episode_rewards.png")
-        #plt.show()
+        plt.savefig("total_episode_rewards.png")
+        plt.show()
 
 
     def test(self, df_test):
@@ -175,11 +176,14 @@ class DeepQLearningAgent:
         self.policy_net.eval()
 
         for index, row in df_test.iterrows():
-            consumption = row.values.tolist()
-            #consumption = consumption[0] nije potrebno jer row nije stra struktura kao df frame u train metodi
-            state = self.environment.reset(consumption)
+            row_list = row.values.tolist()
+            #row_list = row_list[0] nije potrebno jer row nije stra struktura kao df frame u train metodi
 
-            state = self.environment.reset(consumption)
+            consumption_percents = row_list[1:self.environment.n_consumers + 1]
+            capacitor_statuses = row_list[self.environment.n_consumers + 1:]
+            
+            state = self.environment.reset(consumption_percents, capacitor_statuses)
+
             state = torch.tensor([state], dtype=torch.float)
             done = False
             total_episode_reward = 0
