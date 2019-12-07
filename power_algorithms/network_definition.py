@@ -25,7 +25,7 @@ def create_network():
     pp.create_line(network, from_bus=mediumVoltageBusNode, to_bus=busNodes[0], length_km=0.2, name="Line_0", std_type="NA2XS2Y 1x150 RM/25 12/20 kV")
 
     for i in range(0, 99):
-        pp.create_line(network, from_bus=busNodes[i], to_bus=busNodes[i+1], length_km=0.2, name="Line_" + str(i), std_type="NA2XS2Y 1x150 RM/25 12/20 kV")
+        pp.create_line(network, from_bus=busNodes[i], to_bus=busNodes[i+1], length_km=0.2, name="Line_" + str(i+1), std_type="NA2XS2Y 1x150 RM/25 12/20 kV")
 
     # Add capacitors with regulating switches
     pp.create_bus(network, vn_kv=20, name="Bus_Cap1")

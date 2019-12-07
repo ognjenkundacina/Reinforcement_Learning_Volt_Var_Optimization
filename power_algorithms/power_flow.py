@@ -1,5 +1,6 @@
 import pandapower as pp
 import power_algorithms.network_management as nm
+import math
 
 class PowerFlow:
     def __init__(self, grid_creator):
@@ -32,21 +33,49 @@ class PowerFlow:
     def get_network_injected_q(self):
         return self.power_grid.res_ext_grid.q_mvar
 
+    def get_lines_apparent_power(self):
+        line_name_with_apparent_power = {}
+        for index, line in self.power_grid.res_line.iterrows():
+            p = line['p_from_mw']
+            q = line['q_from_mvar']
+            s = math.sqrt(pow(p, 2) + pow(q, 2))
+            line_name_with_apparent_power.update( {self.power_grid.line.name.at[index] : s} )
+
+        return line_name_with_apparent_power
+
+    def get_capacitor_calculated_q(self):
+        print(self.power_grid.shunt)
+        print(self.power_grid.res_shunt)
+        capacitor_q_injected = {}
+        capacitors = self.power_grid.shunt[(self.power_grid.shunt.name.find("Cap") != -1)].index
+        for cap_index in capacitors:
+            capacitor_q_injected.update( {self.power_grid.shunt.name.at[cap_index] : self.power_grid.res_shunt.q_mvar.at[cap_index]} )
+
+        return capacitor_q_injected
+
+
 # def main():
-#     network_manager = nm.NetworkManagement()
-#     power_flow = PowerFlow(network_manager)
-#     power_flow.calculate_power_flow()
-#     print(power_flow.get_losses())
-#     print(power_flow.get_network_injected_p())
-#     print(power_flow.get_network_injected_q())
-#     network_manager.change_capacitor_status('CapSwitch6', True)
-#     power_flow.calculate_power_flow()
-#     print(power_flow.get_losses())
+    # network_manager = NetworkManagement()
+    # power_flow = PowerFlow(network_manager)
+    # network_manager.change_capacitor_status('CapSwitch1', True)
+    # network_manager.change_capacitor_status('CapSwitch2', True)
+    # network_manager.change_capacitor_status('CapSwitch3', True)
+    # network_manager.change_capacitor_status('CapSwitch4', True)
+    # network_manager.change_capacitor_status('CapSwitch5', True)
+    # power_flow.calculate_power_flow()
+    # print(power_flow.get_capacitor_calculated_q())
+    # caps = network_manager.get_all_capacitors()
+    # for keys, values in caps.items():
+    #     print(keys)
+    #     print(values)
 
-#     print(*network_manager.get_all_capacitor_switch_names())
-#     print(power_flow.get_network_injected_p())
-#     print(power_flow.get_network_injected_q())
+    # network_manager.toogle_capacitor_status("CapSwitch1")
+    # print("----------------------------")
+    # caps = network_manager.get_all_capacitors()
+    # for keys, values in caps.items():
+    #     print(keys)
+    #     print(values)
 
-#     print(power_flow.get_bus_voltages())
+    # power_flow.get_capacitor_calculated_q()
 
 # main()
