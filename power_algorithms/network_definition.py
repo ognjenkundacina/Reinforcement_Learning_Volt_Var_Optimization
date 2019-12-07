@@ -19,7 +19,7 @@ def create_network():
     for i in range(0, 100):
         busNodes.append(pp.create_bus(network, vn_kv=20, name="Bus_" + str(i+1)))
         lowVoltageBusNodes.append(pp.create_bus(network, vn_kv=0.4, name="LowVoltageBus_" + str(i+1)))
-        pp.create_load(network, bus=lowVoltageBusNodes[i], p_mw=0.05, q_mvar=0.0165, name="Load_" + str(i+1))
+        pp.create_load(network, bus=lowVoltageBusNodes[i], p_mw=0.1, q_mvar=0.033, name="Load_" + str(i+1))
         pp.create_transformer(network, hv_bus=busNodes[i], lv_bus=lowVoltageBusNodes[i], std_type="SN/NN 1MVA", name="Transformer_" + str(i+1))
 
     pp.create_line(network, from_bus=mediumVoltageBusNode, to_bus=busNodes[0], length_km=0.2, name="Line_0", std_type="NA2XS2Y 1x150 RM/25 12/20 kV")
