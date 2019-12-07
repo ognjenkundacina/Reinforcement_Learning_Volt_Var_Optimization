@@ -32,14 +32,17 @@ def main():
     network_manager = nm.NetworkManagement()
     power_flow = PowerFlow(network_manager)
     objective_functions = ObjectiveFunctions(objectives, power_flow)
+    print('=====================vvo=====================')
     vvo = VVO(network_manager, power_flow, objective_functions) 
     vvo.test(df_test)
-
+    
+    print('=====================vvo_brute_force=====================')
     vvo_brute_force(df_test)
 
     #environment should'n have the entire dataset as an input parameter, but train and test methods
     environment = Environment()
 
+    print('=====================agent=====================')
     agent = DeepQLearningAgent(environment)
 
     n_episodes = 1000

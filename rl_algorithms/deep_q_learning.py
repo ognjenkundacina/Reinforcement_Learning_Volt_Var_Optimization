@@ -102,8 +102,8 @@ class DeepQLearningAgent:
         
         total_episode_rewards = []
         for i_episode in range(n_episodes):
-            if (i_episode % 10 == 0):
-                print("=========Episode: ", i_episode)
+            #if (i_episode % 10 == 0):
+                #print("=========Episode: ", i_episode)
 
             if (i_episode == 50):
                 self.epsilon = 0.3

@@ -55,14 +55,14 @@ class PowerFlow:
         return capacitor_q_injected
     
     def create_data_set(self):
-        columns = [i for i in range(106)]
+        columns = [i for i in range(108)]
         index = [i for i in range(1000)]
         df = pandas.DataFrame(index=index, columns=columns)
         df = df.fillna(0)
         for index, row in df.iterrows():
             for i in range(100):
                 df.loc[index, i] = random.random()
-            for i in range(100, 106):
+            for i in range(100, 108):
                 df.loc[index, i] = random.choice([True, False])
 
         df.to_csv('data.csv')
