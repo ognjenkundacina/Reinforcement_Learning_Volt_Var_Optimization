@@ -67,7 +67,7 @@ class Environment(gym.Env):
         new_losses = self.power_flow.get_losses()
         losses_decrease = self.current_losses - new_losses
         reward = losses_decrease * 1000
-        print ('losses_decrease', losses_decrease)
+        #print ('losses_decrease', losses_decrease)
         self.current_losses = new_losses
         #ObjectiveFunctions
 

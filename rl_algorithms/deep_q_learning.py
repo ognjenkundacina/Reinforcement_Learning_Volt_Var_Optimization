@@ -102,15 +102,15 @@ class DeepQLearningAgent:
         
         total_episode_rewards = []
         for i_episode in range(n_episodes):
-            if (i_episode % 1 == 0):
+            if (i_episode % 10 == 0):
                 print("=========Episode: ", i_episode)
 
-            if (i_episode == 10):
-                self.epsilon = 0.3
             if (i_episode == 50):
+                self.epsilon = 0.3
+            if (i_episode == 150):
                 self.epsilon = 0.1
 
-            if (i_episode % 20 == 19):
+            if (i_episode % 100 == 99):
                 time.sleep(30)
 
             done = False
@@ -128,7 +128,7 @@ class DeepQLearningAgent:
 
             while not done:
                 action = self.get_action(state, epsilon = self.epsilon)
-                print("Toogle capacitor: ", action + 1)    
+                #print("Toogle capacitor: ", action + 1)    
                 if (action > self.n_actions - 1):
                     print("agent.train: action > self.n_actions - 1")
                 next_state, reward, done = self.environment.step(action)
@@ -148,8 +148,8 @@ class DeepQLearningAgent:
             
             total_episode_rewards.append(total_episode_reward)
 
-            if (i_episode % 1 == 0):
-                print ("total_episode_reward: ", total_episode_reward)
+            #if (i_episode % 10 == 0):
+                #print ("total_episode_reward: ", total_episode_reward)
 
             if (i_episode % 100 == 0):
                 torch.save(self.policy_net.state_dict(), "policy_net")
@@ -157,7 +157,7 @@ class DeepQLearningAgent:
             if i_episode % self.target_update == 0:
                 self.target_net.load_state_dict(self.policy_net.state_dict())
 
-            print("=====================================")
+            #print("=====================================")
 
         torch.save(self.policy_net.state_dict(), "policy_net")
 
@@ -166,7 +166,7 @@ class DeepQLearningAgent:
         plt.xlabel('Episode number') 
         plt.ylabel('Total episode reward') 
         plt.savefig("total_episode_rewards.png")
-        plt.show()
+        #plt.show()
 
 
     def test(self, df_test):
@@ -181,7 +181,7 @@ class DeepQLearningAgent:
 
             consumption_percents = row_list[1:self.environment.n_consumers + 1]
             capacitor_statuses = row_list[self.environment.n_consumers + 1:]
-            
+
             state = self.environment.reset(consumption_percents, capacitor_statuses)
 
             state = torch.tensor([state], dtype=torch.float)
