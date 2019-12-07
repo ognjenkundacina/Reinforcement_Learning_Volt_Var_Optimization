@@ -43,39 +43,17 @@ class PowerFlow:
 
         return line_name_with_apparent_power
 
+    def get_capacitor_indices_from_shunts(self):
+        capacitors = []
+        for index, row in self.power_grid.shunt.iterrows():
+            if 'Cap' in row['name']:
+                capacitors.append(index)
+        return capacitors
+
     def get_capacitor_calculated_q(self):
-        print(self.power_grid.shunt)
-        print(self.power_grid.res_shunt)
         capacitor_q_injected = {}
-        capacitors = self.power_grid.shunt[(self.power_grid.shunt.name.find("Cap") != -1)].index
+        capacitors = self.get_capacitor_indices_from_shunts()
         for cap_index in capacitors:
             capacitor_q_injected.update( {self.power_grid.shunt.name.at[cap_index] : self.power_grid.res_shunt.q_mvar.at[cap_index]} )
 
         return capacitor_q_injected
-
-
-# def main():
-    # network_manager = NetworkManagement()
-    # power_flow = PowerFlow(network_manager)
-    # network_manager.change_capacitor_status('CapSwitch1', True)
-    # network_manager.change_capacitor_status('CapSwitch2', True)
-    # network_manager.change_capacitor_status('CapSwitch3', True)
-    # network_manager.change_capacitor_status('CapSwitch4', True)
-    # network_manager.change_capacitor_status('CapSwitch5', True)
-    # power_flow.calculate_power_flow()
-    # print(power_flow.get_capacitor_calculated_q())
-    # caps = network_manager.get_all_capacitors()
-    # for keys, values in caps.items():
-    #     print(keys)
-    #     print(values)
-
-    # network_manager.toogle_capacitor_status("CapSwitch1")
-    # print("----------------------------")
-    # caps = network_manager.get_all_capacitors()
-    # for keys, values in caps.items():
-    #     print(keys)
-    #     print(values)
-
-    # power_flow.get_capacitor_calculated_q()
-
-# main()
