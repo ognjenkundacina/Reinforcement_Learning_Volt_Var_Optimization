@@ -34,7 +34,8 @@ class NetworkManagement:
             self.power_grid.load.scaling.loc[index] = scaling_factors[index]
 
     def set_capacitors_initial_status(self, capacitors_statuses):
-        if (len(capacitors_statuses) != len(self.power_grid.shunt.index)):
+        capacitor_indices = self.get_capacitor_indices_from_shunts()
+        if (len(capacitors_statuses) != len(capacitor_indices)):
             print("(ERROR) Input list of capacitor statuses {} is not the same length as number of capacitors {}".format(len(capacitors_statuses), len(self.power_grid.shunt.index)))
             return
         
@@ -43,3 +44,13 @@ class NetworkManagement:
         for switch_index in capacitor_switches:
             self.power_grid.switch.closed.loc[switch_index] = capacitors_statuses[input_status_index]
             input_status_index += 1
+
+    def get_capacitor_indices_from_shunts(self):
+        capacitors = []
+        for index, row in self.power_grid.shunt.iterrows():
+            if 'Cap' in row['name']:
+                capacitors.append(index)
+        return capacitors
+
+    def print_cap_status(self):
+        print(self.power_grid.switch)

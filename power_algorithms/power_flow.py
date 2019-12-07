@@ -5,6 +5,7 @@ import math
 class PowerFlow:
     def __init__(self, grid_creator):
         self.power_grid = grid_creator.get_power_grid()
+        self.network_manager = grid_creator
 
     def calculate_power_flow(self):
         pp.runpp(self.power_grid, algorithm="bfsw", calculate_voltage_angles=False)
@@ -43,16 +44,9 @@ class PowerFlow:
 
         return line_name_with_apparent_power
 
-    def get_capacitor_indices_from_shunts(self):
-        capacitors = []
-        for index, row in self.power_grid.shunt.iterrows():
-            if 'Cap' in row['name']:
-                capacitors.append(index)
-        return capacitors
-
     def get_capacitor_calculated_q(self):
         capacitor_q_injected = {}
-        capacitors = self.get_capacitor_indices_from_shunts()
+        capacitors = self.network_manager.get_capacitor_indices_from_shunts()
         for cap_index in capacitors:
             capacitor_q_injected.update( {self.power_grid.shunt.name.at[cap_index] : self.power_grid.res_shunt.q_mvar.at[cap_index]} )
 
