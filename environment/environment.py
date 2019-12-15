@@ -12,15 +12,15 @@ class Environment(gym.Env):
         super(Environment, self).__init__()
         
         self.state = []
-        self.state_space_dims = 101
-        self.n_actions = 6 #n_capacitors
-        self.i_step = 0
 
         self.network_manager = nm.NetworkManagement()
         self.power_flow = PowerFlow(self.network_manager)
+        self.power_flow.calculate_power_flow() #potrebno zbog odredjivanja state_space_dims
 
-
-        self.n_consumers = 100
+        self.state_space_dims = len(self.power_flow.get_bus_voltages())
+        self.n_actions = len(self.network_manager.get_all_capacitors())
+        self.n_consumers = len(self.network_manager.power_grid.load.index)
+        self.i_step = 0
         self.current_losses = 0.0
 
         self.available_actions = [i for i in range(self.n_actions)] #todo ovo bi mogao biti dictionary, ako bismo tap changere koristili, ili diskretizovane setpointe generatora
@@ -71,14 +71,8 @@ class Environment(gym.Env):
         self.current_losses = new_losses
         #ObjectiveFunctions
 
-        #neka nagrada/kazna za gubitke bude delta, a ne sami iznos gubitaka 
-        #nek za pocetak bude samo optimizacija gubitaka, pa kasnije mozemo dodavati voltage deviation
-
-        #mala kazna za svaki novi self.i_step
-
         #sprijeciti ponavljanje istih akcija vise puta u epizodi
         #1. Dati veliku kaznu ako je akcija vec odradjena - lose, imamo previse nagrada i kazni i zbunjujemo agenta
-        #2. Izmjeniti metodu get_action tako da biramo samo najbolju akciju (ili random akciju) iz aktuelne liste akcija, koja se mijenja tokom jedne epizode
         #todo
         return reward
 

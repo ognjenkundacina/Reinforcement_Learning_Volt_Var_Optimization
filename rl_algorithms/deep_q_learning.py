@@ -105,13 +105,13 @@ class DeepQLearningAgent:
             if (i_episode % 100 == 0):
                 print("=========Episode: ", i_episode)
 
-            if (i_episode == 50):
+            if (i_episode == int(0.1 * n_episodes)):
                 self.epsilon = 0.3
-            if (i_episode == 150):
+            if (i_episode == int(0.5 * n_episodes)):
                 self.epsilon = 0.1
 
-            if (i_episode % 100 == 99):
-                time.sleep(30)
+            #if (i_episode % 100 == 99):
+                #time.sleep(30)
 
             done = False
             df_row = df_train.sample(n=1)
@@ -201,6 +201,7 @@ class DeepQLearningAgent:
                 if (self.environment.i_step == self.environment.n_actions):
                     print('LOSSES: ', self.environment.current_losses)
                 elif done: #posljednja akcija nije donosila benefit, pa je ukidamo i nakon nje ispisujemo gubitke u mrezi
+                    print ('Last action was reverted')
                     print('LOSSES: ', self.environment.revert_action(action))
 
             total_episode_reward_list.append(total_episode_reward)
