@@ -102,8 +102,8 @@ class DeepQLearningAgent:
         
         total_episode_rewards = []
         for i_episode in range(n_episodes):
-            #if (i_episode % 10 == 0):
-                #print("=========Episode: ", i_episode)
+            if (i_episode % 100 == 0):
+                print("=========Episode: ", i_episode)
 
             if (i_episode == 50):
                 self.epsilon = 0.3
@@ -198,7 +198,9 @@ class DeepQLearningAgent:
                 total_episode_reward += reward
                 state = torch.tensor([next_state], dtype=torch.float)
 
-                if done: #posljednja akcija nije donosila benefit, pa je ukidamo i nakon nje ispisujemo gubitke u mrezi
+                if (self.environment.i_step == self.environment.n_actions):
+                    print('LOSSES: ', self.environment.current_losses)
+                elif done: #posljednja akcija nije donosila benefit, pa je ukidamo i nakon nje ispisujemo gubitke u mrezi
                     print('LOSSES: ', self.environment.revert_action(action))
 
             total_episode_reward_list.append(total_episode_reward)
