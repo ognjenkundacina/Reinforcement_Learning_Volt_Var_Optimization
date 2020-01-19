@@ -4,6 +4,15 @@ from opendssdirect.utils import Iterator
 class ODSSNetworkManagement:
     def __init__(self):
         dss.run_command('Redirect power_algorithms/Test_scheme.dss')
+        self.nominal_load_kW = {}
+        self.nominal_load_kVAr = {}
+        self.__save_nominal_load_powers() #remeber nominal load values so that load scaling feature can use them
+
+    def __save_nominal_load_powers(self):
+        for loadName in Iterator(dss.Loads, 'Name'):
+            dss.Loads.Name(loadName())
+            self.nominal_load_kW.update( {loadName() : dss.Loads.kW()} )
+            self.nominal_load_kVAr.update( {loadName() : dss.Loads.kvar()} )
 
     def toogle_capacitor_status(self, capSwitchName):
         dss.Capacitors.Name(capSwitchName)
@@ -44,12 +53,9 @@ class ODSSNetworkManagement:
             print("(ERROR) Input list of scaling factors {} is not the same length as number of loads {}".format(len(scaling_factors), dss.Loads.Count()))
             return
 
-        pNom = 140 #these hardcoded values should be changed, ODSS does not have scaling factor, discuss other solutions
-        qNom = 50
         index = 0
         for loadName in Iterator(dss.Loads, 'Name'):
             dss.Loads.Name(loadName())
-            dss.Loads.kW = pNom * scaling_factors[index]
+            dss.Loads.kW = self.nominal_load_kW[loadName()] * scaling_factors[index]
+            dss.Loads.kvar = self.nominal_load_kVAr[loadName()] * scaling_factors[index]
             index = index + 1
-
-    
