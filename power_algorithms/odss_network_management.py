@@ -59,3 +59,6 @@ class ODSSNetworkManagement:
             dss.Loads.kW = self.nominal_load_kW[loadName()] * scaling_factors[index]
             dss.Loads.kvar = self.nominal_load_kVAr[loadName()] * scaling_factors[index]
             index = index + 1
+            
+    def get_load_count(self):
+        return dss.Loads.Count()
