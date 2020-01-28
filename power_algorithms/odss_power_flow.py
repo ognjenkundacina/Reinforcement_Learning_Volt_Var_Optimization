@@ -15,12 +15,15 @@ class ODSSPowerFlow:
         busVoltages = {}
         for busName in dss.Circuit.AllBusNames():
             dss.Circuit.SetActiveBus(f"{busName}")
-            if (dss.Bus.kVBase() == 20/math.sqrt(3)):
-                index = dss.Bus.Nodes().index(1) # 1 means phase A, 2 means B and 3 means C
-                re, im = dss.Bus.VLL()[index:index+2]
-                V = abs(complex(re, im))
-                busVoltages.update( {busName : V } )
-
+            #if (dss.Bus.kVBase() == 4.16/math.sqrt(3)):
+            V_for_mean = []
+            for phase in range(1, 4):
+                if phase in dss.Bus.Nodes():
+                    index = dss.Bus.Nodes().index(phase)
+                    re, im = dss.Bus.Voltages()[index*2:index*2+2]
+                    V = abs(complex(re, im))
+                    V_for_mean.append(V)
+            busVoltages.update( {busName : (sum(V_for_mean) / len(V_for_mean)) } )
         return busVoltages
 
     def get_network_injected_p(self):
