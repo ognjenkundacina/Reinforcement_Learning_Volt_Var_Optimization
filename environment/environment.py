@@ -2,8 +2,10 @@ import gym
 from gym import spaces
 import random
 import numpy as np 
-from power_algorithms.power_flow import PowerFlow
-import power_algorithms.network_management as nm
+#from power_algorithms.power_flow import PowerFlow
+from power_algorithms.odss_power_flow import ODSSPowerFlow
+#import power_algorithms.network_management as nm
+import power_algorithms.odss_network_management as nm
 
 #todo uvazi consumption u ovom fajlu gdje god se pominje
 class Environment(gym.Env):
@@ -13,13 +15,13 @@ class Environment(gym.Env):
         
         self.state = []
 
-        self.network_manager = nm.NetworkManagement()
-        self.power_flow = PowerFlow(self.network_manager)
+        self.network_manager = nm.ODSSNetworkManagement()
+        self.power_flow = ODSSPowerFlow()
         self.power_flow.calculate_power_flow() #potrebno zbog odredjivanja state_space_dims
 
         self.state_space_dims = len(self.power_flow.get_bus_voltages())
         self.n_actions = len(self.network_manager.get_all_capacitors())
-        self.n_consumers = len(self.network_manager.power_grid.load.index)
+        self.n_consumers = self.network_manager.get_load_count()
         self.i_step = 0
         self.current_losses = 0.0
 

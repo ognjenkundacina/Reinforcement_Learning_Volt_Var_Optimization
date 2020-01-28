@@ -20,7 +20,7 @@ class ODSSPowerFlow:
             for phase in range(1, 4):
                 if phase in dss.Bus.Nodes():
                     index = dss.Bus.Nodes().index(phase)
-                    re, im = dss.Bus.Voltages()[index*2:index*2+2]
+                    re, im = dss.Bus.PuVoltage()[index*2:index*2+2]
                     V = abs(complex(re, im))
                     V_for_mean.append(V)
             busVoltages.update( {busName : (sum(V_for_mean) / len(V_for_mean)) } )
