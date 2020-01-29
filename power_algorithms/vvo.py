@@ -1,7 +1,8 @@
 import pandas
-import power_algorithms.network_management as nm
+from power_algorithms.odss_network_management import ODSSNetworkManagement
 from power_algorithms.objective_functions import ObjectiveFunctions, ObjFuncType, ObjectivesStatus
-from power_algorithms.power_flow import PowerFlow
+from power_algorithms.odss_power_flow import ODSSPowerFlow
+
 
 class VVO():
 
@@ -16,6 +17,8 @@ class VVO():
         self.power_flow.calculate_power_flow()
         n_power_flow_execution = n_power_flow_execution + 1
         self.objective_functions.SetCurrentObjectivesResults()
+        print('VVO results:')
+        print('Initial losses: ', self.objective_functions.current_objectives_result[ObjFuncType.ACTIVE_POWER_LOSSES.name])
 
         should_use_capacitor = {}
         capacitors = self.network_manager.get_all_capacitor_switch_names()
@@ -48,9 +51,8 @@ class VVO():
             else:
                 there_is_capacitors_for_use = False
 
-        print('VVO results:')
-        print('Number of power flow executions: ', n_power_flow_execution)
         print('Final losses: ', self.objective_functions.current_objectives_result[ObjFuncType.ACTIVE_POWER_LOSSES.name])
+        print('Number of power flow executions: ', n_power_flow_execution)
         for capacitor in switchingSequence:
             print(capacitor)
 
@@ -84,14 +86,14 @@ class VVO():
             self.execute()
 
 #def main():
-  #  objectiveFunction = ObjFuncType.ACTIVE_POWER_LOSSES
-  #  constraint = ObjFuncType.MV_VOLTAGE_DEVIATION
-  #  objectives = (objectiveFunction, constraint)
-  #  network_manager = nm.NetworkManagement()
-  #  power_flow = PowerFlow(network_manager)
-  #  objective_functions = ObjectiveFunctions(objectives, power_flow)
+ #   objectiveFunction = ObjFuncType.ACTIVE_POWER_LOSSES
+ #   constraint = ObjFuncType.MV_VOLTAGE_DEVIATION
+ #   objectives = (objectiveFunction, constraint)
+ #   network_manager = ODSSNetworkManagement()
+ #   power_flow = ODSSPowerFlow()
+ #   objective_functions = ObjectiveFunctions(objectives, power_flow)
 
-  #  vvo = VVO(network_manager, power_flow, objective_functions)
-  #  vvo.execute()
+ #   vvo = VVO(network_manager, power_flow, objective_functions)
+ #   vvo.execute()
 
 #main()

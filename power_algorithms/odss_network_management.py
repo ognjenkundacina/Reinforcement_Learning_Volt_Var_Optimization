@@ -17,7 +17,7 @@ class ODSSNetworkManagement:
     def toogle_capacitor_status(self, capSwitchName):
         dss.Capacitors.Name(capSwitchName)
         currentState = dss.Capacitors.States()
-        if (currentState == 0):
+        if (currentState[0] == 0):
             dss.Capacitors.Close()
         else:
             dss.Capacitors.Open()

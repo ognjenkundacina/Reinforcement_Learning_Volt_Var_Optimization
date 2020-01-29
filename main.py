@@ -3,10 +3,10 @@ from environment.environment import Environment
 import pandas as pd
 from rl_algorithms.deep_q_learning import DeepQLearningAgent
 from power_algorithms.vvo import VVO
-from power_algorithms.power_flow import PowerFlow
 from power_algorithms.vvo_brute_force import vvo_brute_force
 import time
-import power_algorithms.network_management as nm
+from power_algorithms.odss_network_management import ODSSNetworkManagement
+from power_algorithms.odss_power_flow import ODSSPowerFlow
 from power_algorithms.objective_functions import ObjectiveFunctions, ObjFuncType
 
 
@@ -29,8 +29,8 @@ def main():
     df_train, df_test = split_dataset(df, 998)
 
     objectives = [ObjFuncType.ACTIVE_POWER_LOSSES]
-    network_manager = nm.NetworkManagement()
-    power_flow = PowerFlow(network_manager)
+    network_manager = ODSSNetworkManagement()
+    power_flow = ODSSPowerFlow()
     objective_functions = ObjectiveFunctions(objectives, power_flow)
     print('=====================vvo=====================')
     vvo = VVO(network_manager, power_flow, objective_functions) 
