@@ -6,13 +6,15 @@ class ODSSNetworkManagement:
         dss.run_command('Redirect power_algorithms/IEEE123_scheme/Run_IEEE123Bus.DSS')
         self.nominal_load_kW = {}
         self.nominal_load_kVAr = {}
-        self.__save_nominal_load_powers() #remeber nominal load values so that load scaling feature can use them
+        self.__save_nominal_load_powers() #remember nominal load values so that load scaling feature can use them
 
     def __save_nominal_load_powers(self):
         for loadName in Iterator(dss.Loads, 'Name'):
-            dss.Loads.Name(loadName())
-            self.nominal_load_kW.update( {loadName() : dss.Loads.kW()} )
-            self.nominal_load_kVAr.update( {loadName() : dss.Loads.kvar()} )
+            #dss.Loads.Name(loadName())
+            kW = dss.Loads.kW()
+            kVAr = dss.Loads.kvar()
+            self.nominal_load_kW.update( {loadName() : kW} )
+            self.nominal_load_kVAr.update( {loadName() : kVAr} )
 
     def toogle_capacitor_status(self, capSwitchName):
         dss.Capacitors.Name(capSwitchName)
@@ -56,9 +58,17 @@ class ODSSNetworkManagement:
         index = 0
         for loadName in Iterator(dss.Loads, 'Name'):
             dss.Loads.Name(loadName())
-            dss.Loads.kW = self.nominal_load_kW[loadName()] * scaling_factors[index]
-            dss.Loads.kvar = self.nominal_load_kVAr[loadName()] * scaling_factors[index]
+            dss.Loads.kW(self.nominal_load_kW[loadName()] * scaling_factors[index])
+            dss.Loads.kvar(self.nominal_load_kVAr[loadName()] * scaling_factors[index])
             index = index + 1
             
     def get_load_count(self):
         return dss.Loads.Count()
+
+    def print_loads(self):
+        for loadName in Iterator(dss.Loads, 'Name'):
+            kW = dss.Loads.kW()
+            kVAr = dss.Loads.kvar()
+            print(loadName())
+            print(kW)
+            print(kVAr)
