@@ -35,6 +35,13 @@ class ODSSNetworkManagement:
             capacitorStatuses.update( {capName() : currentState[0]} )
 
         return capacitorStatuses
+        
+    def set_capacitor_status(self, cap_name, on):
+        dss.Capacitors.Name(cap_name)
+        if on:
+            dss.Capacitors.Close()
+        else:
+            dss.Capacitors.Open()
 
     def set_capacitors_initial_status(self, capacitors_statuses):
         if (len(capacitors_statuses) != dss.Capacitors.Count()):
