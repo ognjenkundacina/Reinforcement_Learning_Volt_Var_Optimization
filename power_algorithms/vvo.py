@@ -77,8 +77,9 @@ class VVO():
         for index, row in df_test.iterrows():
             row_list = row.values.tolist()
 
-            consumption_percents = row_list[1:100 + 1]
-            capacitor_statuses = row_list[100 + 1:]
+            loads_count = self.network_manager.get_load_count()
+            consumption_percents = row_list[1:loads_count + 1]
+            capacitor_statuses = row_list[loads_count + 1:]
 
             self.network_manager.set_load_scaling(consumption_percents)
             self.network_manager.set_capacitors_initial_status(capacitor_statuses)
