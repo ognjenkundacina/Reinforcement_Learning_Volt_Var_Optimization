@@ -55,10 +55,10 @@ class DeepQLearningAgent:
 
     def __init__(self, environment):
         self.environment = environment
-        self.epsilon = 0.5
-        self.batch_size = 32
+        self.epsilon = 0.2
+        self.batch_size = 64
         self.gamma = 1.0
-        self.target_update = 5
+        self.target_update = 10
         self.memory = ReplayMemory(1000000)
 
         self.state_space_dims = environment.state_space_dims
@@ -87,14 +87,15 @@ class DeepQLearningAgent:
                 for action_candidate in sorted_actions:
                     if (len(self.environment.available_actions) == 0):
                         print('Agent -> get_action: No avaliable actions')
-                    if action_candidate in self.environment.available_actions:
+                    if action_candidate in self.environment.available_actions.keys():
                         action = action_candidate
                         break
                 #action = self.policy_net(state).max(1)[1].view(1, 1)
                 self.policy_net.train()
+                #print('Best action: ', action)
                 return action
         else:
-            action = random.choice(self.environment.available_actions)
+            action = random.choice(list(self.environment.available_actions.keys()))
             #print('Random action: ', action)
             return action
 
@@ -102,16 +103,16 @@ class DeepQLearningAgent:
         
         total_episode_rewards = []
         for i_episode in range(n_episodes):
-            if (i_episode % 100 == 0):
+            if (i_episode % 1000 == 0):
                 print("=========Episode: ", i_episode)
 
-            if (i_episode == int(0.1 * n_episodes)):
-                self.epsilon = 0.3
-            if (i_episode == int(0.5 * n_episodes)):
-                self.epsilon = 0.1
+            #if (i_episode == int(0.1 * n_episodes)):
+                #self.epsilon = 0.3
+            #if (i_episode == int(0.5 * n_episodes)):
+                #self.epsilon = 0.1
 
-            #if (i_episode % 100 == 99):
-                #time.sleep(30)
+            if (i_episode % 1000 == 999):
+                time.sleep(60)
 
             done = False
             df_row = df_train.sample(n=1)
@@ -172,7 +173,7 @@ class DeepQLearningAgent:
     def test(self, df_test):
         total_episode_reward_list = [] 
 
-        #self.policy_net.load_state_dict(torch.load("policy_net"))
+        self.policy_net.load_state_dict(torch.load("policy_net"))
         self.policy_net.eval()
 
         for index, row in df_test.iterrows():
@@ -191,7 +192,7 @@ class DeepQLearningAgent:
 
             while not done:
                 action = self.get_action(state, epsilon = 0.0)
-                print("Toogle capacitor: ", action + 1) 
+                print("Toogle capacitor: ", self.environment.capacitor_names_by_index[action]) 
                 if (action > self.n_actions - 1):
                     print ("agent.test: action > self.n_actions - 1")
                 

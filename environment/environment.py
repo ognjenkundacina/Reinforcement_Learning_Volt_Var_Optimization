@@ -7,7 +7,6 @@ from power_algorithms.odss_power_flow import ODSSPowerFlow
 #import power_algorithms.network_management as nm
 import power_algorithms.odss_network_management as nm
 
-#todo uvazi consumption u ovom fajlu gdje god se pominje
 class Environment(gym.Env):
     
     def __init__(self):
@@ -25,8 +24,10 @@ class Environment(gym.Env):
         self.i_step = 0
         self.current_losses = 0.0
 
-        self.available_actions = [i for i in range(self.n_actions)] #todo ovo bi mogao biti dictionary, ako bismo tap changere koristili, ili diskretizovane setpointe generatora
-
+        self.capacitor_names = self.network_manager.get_all_capacitor_switch_names()
+        self.action_indices = [i for i in range(self.n_actions)] #todo ovo bi mogao biti dictionary, ako bismo tap changere koristili, ili diskretizovane setpointe generatora
+        self.capacitor_names_by_index = dict(zip(self.action_indices, self.capacitor_names))
+        
     def _update_state(self):
         self.power_flow.calculate_power_flow()
 
@@ -42,8 +43,8 @@ class Environment(gym.Env):
 
     #action: 0..n_actions
     def step(self, action):
-        self.network_manager.toogle_capacitor_status('CapSwitch'+str(action + 1))
-        self.available_actions.remove(action)
+        self.network_manager.toogle_capacitor_status(self.available_actions[action])
+        self.available_actions.pop(action)
         
         next_state = self._update_state()
 
@@ -60,7 +61,7 @@ class Environment(gym.Env):
     
     #only for test set
     def revert_action(self, action):
-        self.network_manager.toogle_capacitor_status('CapSwitch'+str(action + 1))
+        self.network_manager.toogle_capacitor_status(self.capacitor_names_by_index[action])
         next_state = self._update_state()
         return self.power_flow.get_losses()
 
@@ -69,13 +70,9 @@ class Environment(gym.Env):
         new_losses = self.power_flow.get_losses()
         losses_decrease = self.current_losses - new_losses
         reward = losses_decrease * 1000
-        #print ('losses_decrease', losses_decrease)
         self.current_losses = new_losses
         #ObjectiveFunctions
 
-        #sprijeciti ponavljanje istih akcija vise puta u epizodi
-        #1. Dati veliku kaznu ako je akcija vec odradjena - lose, imamo previse nagrada i kazni i zbunjujemo agenta
-        #todo
         return reward
 
     def reset(self, consumption_percents, capacitor_statuses):
@@ -87,10 +84,8 @@ class Environment(gym.Env):
         self.state = list(bus_voltages_dict.values())
         #line_rated_powers_dict = self.power_flow.get_line_rated_powers()
         #self.state = list(line_rated_powers_dict.values())
-
         self.current_losses = self.power_flow.get_losses()
-
         self.i_step = 0
-        self.available_actions = [i for i in range(self.n_actions)]
+        self.available_actions = dict(zip(self.action_indices, self.capacitor_names))
 
         return self.state
