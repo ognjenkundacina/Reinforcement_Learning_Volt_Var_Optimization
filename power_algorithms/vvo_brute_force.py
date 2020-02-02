@@ -1,6 +1,12 @@
 import power_algorithms.odss_network_management as nm
 from power_algorithms.odss_power_flow import ODSSPowerFlow
 
+def is_kth_bit_set(mask, k):
+    if (mask & (1 << k)): 
+        return True
+    else:
+        return False
+
 def vvo_brute_force(df_test):
     network_manager = nm.ODSSNetworkManagement()
     power_flow = ODSSPowerFlow()
@@ -18,30 +24,25 @@ def vvo_brute_force(df_test):
         power_flow.calculate_power_flow()
         min_losses = power_flow.get_losses()
         print ('Starting losses: ', min_losses)
-        optimal_statuses = [False, False, False, False]
         
         capacitor_names = network_manager.get_all_capacitor_switch_names()
-        c0 = capacitor_names[0]
-        c1 = capacitor_names[1]
-        c2 = capacitor_names[2]
-        c3 = capacitor_names[3]
-        
-        for a in False, True:
-            for b in False, True:
-                for c in False, True:
-                    for d in False, True:
-                        network_manager.set_capacitor_status(c0, a)
-                        network_manager.set_capacitor_status(c1, b)
-                        network_manager.set_capacitor_status(c2, c)
-                        network_manager.set_capacitor_status(c3, d)
-                        power_flow.calculate_power_flow()
-                        current_losses = power_flow.get_losses()
-                        if (current_losses < min_losses):
-                            min_losses = current_losses
-                            optimal_statuses = [a, b, c, d]
+        n_capacitors = len(capacitor_names)
+        optimal_statuses = [False for i in range(n_capacitors)]
+
+        for combination_mask in range(2 ** n_capacitors):
+            temp_statuses = []
+            for cap_idx in range (n_capacitors):
+                cap_status = is_kth_bit_set(combination_mask, cap_idx)
+                network_manager.set_capacitor_status(capacitor_names[cap_idx], cap_status)
+                temp_statuses.append(cap_status)
+            power_flow.calculate_power_flow()
+            current_losses = power_flow.get_losses()
+            if (current_losses < min_losses):
+                min_losses = current_losses
+                optimal_statuses = temp_statuses
 
         print ('Minimal losses: ', min_losses)
         print('Minimal losses are achieved when the following capacitors are toogled:')
-        for i in range(4):
+        for i in range(n_capacitors):
             if (optimal_statuses[i] != capacitor_statuses[i]):
-                print("CapSwitch", i+1, " changed its status from:", capacitor_statuses[i], "to", optimal_statuses[i])
+                print("Capacitor ", capacitor_names[i], " changed its status from:", capacitor_statuses[i], "to", optimal_statuses[i])
