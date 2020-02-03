@@ -18,7 +18,7 @@ class Environment(gym.Env):
         self.power_flow = ODSSPowerFlow()
         self.power_flow.calculate_power_flow() #potrebno zbog odredjivanja state_space_dims
 
-        self.state_space_dims = len(self.power_flow.get_bus_voltages())
+        self.state_space_dims = len(self.power_flow.get_bus_voltages()) + len(self.power_flow.get_capacitor_calculated_q())
         self.n_actions = len(self.network_manager.get_all_capacitors())
         self.n_consumers = self.network_manager.get_load_count()
         self.i_step = 0
@@ -33,6 +33,7 @@ class Environment(gym.Env):
 
         bus_voltages_dict = self.power_flow.get_bus_voltages()
         self.state = list(bus_voltages_dict.values())
+        self.state += list(self.power_flow.get_capacitor_calculated_q().values())
         #line_rated_powers_dict = self.power_flow.get_line_rated_powers()
         #self.state = list(line_rated_powers_dict.values())
 
@@ -82,6 +83,7 @@ class Environment(gym.Env):
         self.power_flow.calculate_power_flow()
         bus_voltages_dict = self.power_flow.get_bus_voltages()
         self.state = list(bus_voltages_dict.values())
+        self.state += list(self.power_flow.get_capacitor_calculated_q().values())
         #line_rated_powers_dict = self.power_flow.get_line_rated_powers()
         #self.state = list(line_rated_powers_dict.values())
         self.current_losses = self.power_flow.get_losses()

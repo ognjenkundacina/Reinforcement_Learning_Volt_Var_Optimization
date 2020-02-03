@@ -56,7 +56,7 @@ class DeepQLearningAgent:
     def __init__(self, environment):
         self.environment = environment
         self.epsilon = 0.2
-        self.batch_size = 64
+        self.batch_size = 128
         self.gamma = 1.0
         self.target_update = 10
         self.memory = ReplayMemory(1000000)
@@ -111,8 +111,8 @@ class DeepQLearningAgent:
             #if (i_episode == int(0.5 * n_episodes)):
                 #self.epsilon = 0.1
 
-            if (i_episode % 1000 == 999):
-                time.sleep(60)
+            # if (i_episode % 1000 == 999):
+            #     time.sleep(60)
 
             done = False
             df_row = df_train.sample(n=1)
