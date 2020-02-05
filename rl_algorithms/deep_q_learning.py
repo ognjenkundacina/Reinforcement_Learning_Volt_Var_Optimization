@@ -197,14 +197,19 @@ class DeepQLearningAgent:
                     print ("agent.test: action > self.n_actions - 1")
                 
                 next_state, reward, done = self.environment.step(action)
-                total_episode_reward += reward
-                state = torch.tensor([next_state], dtype=torch.float)
 
+                if done: #posljednja akcija nije donosila benefit, pa je ukidamo
+                    print ('Last action was reverted')
+                    next_state = self.environment.revert_action(action)
+                    reward = 0
+                    done = False
+                    
                 if (self.environment.i_step == self.environment.n_actions):
                     print('LOSSES: ', self.environment.current_losses)
-                elif done: #posljednja akcija nije donosila benefit, pa je ukidamo i nakon nje ispisujemo gubitke u mrezi
-                    print ('Last action was reverted')
-                    print('LOSSES: ', self.environment.revert_action(action))
+                    break
+                    
+                total_episode_reward += reward
+                state = torch.tensor([next_state], dtype=torch.float)
 
             total_episode_reward_list.append(total_episode_reward)
 

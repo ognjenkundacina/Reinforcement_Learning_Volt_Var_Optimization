@@ -64,7 +64,8 @@ class Environment(gym.Env):
     def revert_action(self, action):
         self.network_manager.toogle_capacitor_status(self.capacitor_names_by_index[action])
         next_state = self._update_state()
-        return self.power_flow.get_losses()
+        self.current_losses = self.power_flow.get_losses()
+        return next_state
 
 
     def calculate_reward(self, action):
