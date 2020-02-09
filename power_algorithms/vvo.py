@@ -34,7 +34,9 @@ class VVO():
                 self.network_manager.toogle_capacitor_status(capacitor)
                 self.power_flow.calculate_power_flow()
                 n_power_flow_execution = n_power_flow_execution + 1
-                benefit = self.objective_functions.CalculateObjFunction()
+                benefit, status = self.objective_functions.CalculateObjFunction()
+                if status == ObjectivesStatus.VIOLATED_CONSTRAINT:
+                    continue
                 if benefit > previous_benefit:
                     candidateCapacitor = capacitor
                     previous_benefit = benefit

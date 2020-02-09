@@ -49,7 +49,7 @@ class ObjectiveFunctions:
                     break
             benefit = self.current_objectives_result[iObjective.name] - result
 
-        return benefit
+        return benefit, status
 
     def CalculatePowerLosses(self):
         result = self.power_flow.get_losses()
@@ -63,5 +63,14 @@ class ObjectiveFunctions:
         return result
 
     def CalculateVoltageDeviation(self):
-        result = 0
-        return result
+        voltageDeviation = 0
+        highLimit = 1.05
+        lowLimit = 0.95
+        busVoltages = self.power_flow.get_bus_voltages()
+        for busVoltage in busVoltages:
+            voltageValue = busVoltages[busVoltage]
+            if voltageValue > highLimit:
+                voltageDeviation = voltageValue - highLimit
+            elif voltageValue < lowLimit:
+                voltageDeviation = lowLimit - voltageValue
+        return voltageDeviation

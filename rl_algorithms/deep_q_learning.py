@@ -225,7 +225,7 @@ class DeepQLearningAgent:
 
         #compute a mask of non final states and concatenate the batch elements
         #there will be zero q values for final states later... therefore we need mask
-        non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), dtype = torch.uint8)
+        non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), dtype = torch.bool)
         non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
 
         state_batch = torch.cat(batch.state)
