@@ -75,7 +75,7 @@ class VVO():
             return False
 
     #execute VVO for every example in the test set and calculate the total reward
-    def test(self, df_test):
+    def test(self, df_test, resetCapacitorStatuses):
         for index, row in df_test.iterrows():
             row_list = row.values.tolist()
 
@@ -84,7 +84,8 @@ class VVO():
             capacitor_statuses = row_list[loads_count + 1:]
 
             self.network_manager.set_load_scaling(consumption_percents)
-            self.network_manager.set_capacitors_initial_status(capacitor_statuses)
+            if resetCapacitorStatuses:
+                self.network_manager.set_capacitors_initial_status(capacitor_statuses)
             
             self.execute()
 

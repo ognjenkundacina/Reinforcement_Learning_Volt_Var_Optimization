@@ -184,6 +184,8 @@ class DeepQLearningAgent:
             capacitor_statuses = row_list[self.environment.n_consumers + 1:]
 
             state = self.environment.reset(consumption_percents, capacitor_statuses)
+            self.environment.network_manager.print_all_capacitor_statuses()
+
             print ('Initial losses: ', self.environment.power_flow.get_losses())
 
             state = torch.tensor([state], dtype=torch.float)

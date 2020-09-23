@@ -9,12 +9,13 @@ import power_algorithms.odss_network_management as nm
 
 class Environment(gym.Env):
     
-    def __init__(self):
+    def __init__(self, network_manager):
         super(Environment, self).__init__()
         
         self.state = []
 
-        self.network_manager = nm.ODSSNetworkManagement()
+        #self.network_manager = nm.ODSSNetworkManagement()
+        self.network_manager = network_manager
         self.power_flow = ODSSPowerFlow()
         self.power_flow.calculate_power_flow() #potrebno zbog odredjivanja state_space_dims
 

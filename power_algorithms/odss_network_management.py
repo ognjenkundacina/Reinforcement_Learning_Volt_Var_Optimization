@@ -24,6 +24,21 @@ class ODSSNetworkManagement:
         else:
             dss.Capacitors.Open()
 
+    def print_capacitor_status(self, capSwitchName):
+        dss.Capacitors.Name(capSwitchName)
+        currentState = dss.Capacitors.States()
+        if (currentState[0] == 0):
+            print('Capacitor ', str(capSwitchName), ' is opened')
+        else:
+            print('Capacitor ', str(capSwitchName), ' is closed')
+
+    def print_all_capacitor_statuses(self):
+        print("__________________________________________________")
+        for capName in self.get_all_capacitor_switch_names():
+            self.print_capacitor_status(capName)
+        print("__________________________________________________")
+
+
     def get_all_capacitor_switch_names(self):
         return dss.Capacitors.AllNames()
 
