@@ -16,3 +16,11 @@ new regcontrol.creg4b like=creg4a   transformer=reg4b                           
 new regcontrol.creg4c like=creg4a   transformer=reg4c                                                              R=0.2   X=1.4   
 
 ! NOTE: WHEN LIKE= IS USED, IT IS NECESSARY TO SPECIFY ONLY THOSE PROPERTIES THAT ARE DIFFERENT
+
+! DGs
+new Generator.DG13 bus1=13 kv=4.16 kw=0.1 conn=delta kva=300 H=6 D=1 model=1 kvar=0
+new Generator.DG18 bus1=18 kv=4.16 kw=0.1 conn=delta kva=300 H=6 D=1 model=1 kvar=0
+new Generator.DG60 bus1=60 kv=4.16 kw=0.1 conn=delta kva=300 H=6 D=1 model=1 kvar=0
+new Generator.DG151 bus1=151 kv=4.16 kw=0.1 conn=delta kva=300 H=6 D=1 model=1 kvar=0
+new Generator.DG250 bus1=250 kv=4.16 kw=0.1 conn=delta kva=300 H=6 D=1 model=1 kvar=0
+new Generator.DG300 bus1=300 kv=4.16 kw=0.1 conn=delta kva=300 H=6 D=1 model=1 kvar=0
