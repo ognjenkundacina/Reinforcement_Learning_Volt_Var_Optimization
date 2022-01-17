@@ -16,7 +16,7 @@ self.available_actions = dict(zip(self.action_indices, self.capacitor_names)). 
 
 Action on the switch corresponds to toggling its state. During each step in the episode, we exclude the selected switch from the action space, since the optimal VVO sequence shouldn't activate the same switch multiple times. Although the RL algorithm should figure this out during the training phase, this incorporation of prior knowledge by changing the action space dynamically resulted in a significant acceleration of the RL algorithm's training!
 
-We've recently published a paper containing some of the tricks that could be helpful in using RL for various power systems problems (on a more complex example of dynamic distribution network reconfiguration), so if you consider it useful for your research, please consider citing it: 
+We've recently published a paper containing some of the tricks that could be helpful in using RL for various power systems problems, like changing the action space dynamically, efficient way of incorporating switching operation constraints in some problems or selecting the right set of state variables for switches which leads to lower observability requirements. They are demonstrated on a more complex example of dynamic distribution network reconfiguration, so if you consider it useful for your research, please consider citing it: 
 
 https://www.researchgate.net/publication/355392682_Solving_dynamic_distribution_network_reconfiguration_using_deep_reinforcement_learning.
 
