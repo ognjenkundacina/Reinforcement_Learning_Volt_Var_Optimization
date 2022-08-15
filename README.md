@@ -16,9 +16,26 @@ self.available_actions = dict(zip(self.action_indices, self.capacitor_names)). 
 
 Action on the switch corresponds to toggling its state. During each step in the episode, we exclude the selected switch from the action space, since the optimal VVO sequence shouldn't activate the same switch multiple times. Although the RL algorithm should figure this out during the training phase, this incorporation of prior knowledge by changing the action space dynamically resulted in a significant acceleration of the RL algorithm's training!
 
-We've recently published a paper containing some of the tricks that could be helpful in using RL for various power systems problems, like changing the action space dynamically, efficient way of incorporating switching operation constraints in some problems or selecting the right set of state variables for switches which leads to lower observability requirements. They are demonstrated on a more complex example of dynamic distribution network reconfiguration, so if you consider it useful for your research, please consider citing it: 
+We've recently published a paper containing some of the tricks that could be helpful in using RL for various power systems problems, like changing the action space dynamically, efficient way of incorporating switching operation constraints in some problems or selecting the right set of state variables for switches which leads to lower observability requirements. They are demonstrated on a more complex example of [dynamic distribution network reconfiguration](https://link.springer.com/article/10.1007/s00202-021-01399-y), so if you consider it useful for your research, please consider citing it: 
 
-https://www.researchgate.net/publication/355392682_Solving_dynamic_distribution_network_reconfiguration_using_deep_reinforcement_learning.
+**<u>Plain text:</u>**
+
+Kundačina, O.B., Vidović, P.M. & Petković, M.R. Solving dynamic distribution network reconfiguration using deep reinforcement learning. Electr Eng 104, 1487–1501 (2022). 
+
+**<u>BibTeX:</u>**
+```
+@article{kundavcina2022solving,
+  title={Solving dynamic distribution network reconfiguration using deep reinforcement learning},
+  author={Kunda{\v{c}}ina, Ognjen B and Vidovi{\'c}, Predrag M and Petkovi{\'c}, Milan R},
+  journal={Electrical Engineering},
+  volume={104},
+  number={3},
+  pages={1487--1501},
+  year={2022},
+  publisher={Springer Berlin Heidelberg}
+}
+
+```
 
 To simulate various scenarios, we reset them at the beginning of each episode, along with the initial capacitor statuses, in the environment.py using the interface to ODSS:
 
